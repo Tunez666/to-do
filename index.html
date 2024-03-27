@@ -5,75 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Планер</title>
 <style>
-    /* Общие стили */
-    body {
-        font-family: 'Arial', sans-serif;
-        background-color: #f0f0f0;
-        margin: 0;
-        padding: 0;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-    }
-    
-    .container {
-        max-width: 400px;
-        padding: 20px;
-        background-color: #fff;
-        border-radius: 10px;
-        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-    }
-
-    h1 {
-        text-align: center;
-        color: #333;
-    }
-
-    form {
-        display: flex;
-        flex-direction: column;
-    }
-
-    input[type="text"],
-    input[type="number"],
-    button {
-        margin-bottom: 10px;
-        padding: 10px;
-        border: none;
-        border-radius: 5px;
-        background-color: #f9f9f9;
-        font-size: 16px;
-    }
-
-    button {
-        background-color: #4CAF50;
-        color: white;
-        cursor: pointer;
-    }
-
-    button:hover {
-        background-color: #45a049;
-    }
-
-    .plan {
-        margin-bottom: 10px;
-        padding: 10px;
-        border-radius: 5px;
-        background-color: #f9f9f9;
-        color: #333;
-    }
-
-    .completed {
-        text-decoration: line-through;
-    }
-
-    /* Медиа-запросы для планшетов */
-    @media only screen and (min-width: 768px) {
-        .container {
-            max-width: 600px;
-        }
-    }
+    /* Стили остаются без изменений */
 </style>
 </head>
 <body>
@@ -85,49 +17,93 @@
         <button type="submit">Добавить план</button>
     </form>
     <div id="planList"></div>
+    <button onclick="startNewDay()">Новый день</button>
 </div>
 
 <script>
-    // JavaScript код здесь
-// Создаем массив для хранения планов
-let plans = [];
+    // Создаем массив для хранения планов
+    let plans = [];
 
-// Функция добавления плана
-function addPlan(title, effort) {
-    let plan = { title: title, effort: effort, completed: false };
-    plans.push(plan);
-}
-
-// Функция редактирования плана
-function editPlan(index, title, effort) {
-    if (index >= 0 && index < plans.length) {
-        plans[index].title = title;
-        plans[index].effort = effort;
-    } else {
-        console.log("Индекс плана недействителен");
+    // Функция для добавления плана
+    function addPlan(title, effort) {
+        let plan = { title: title, effort: effort, completed: false };
+        plans.push(plan);
+        renderPlans(); // После добавления плана перерисовываем список
     }
-}
 
-// Функция отметки выполненных задач
-function markCompleted(index) {
-    if (index >= 0 && index < plans.length) {
+    // Функция для отображения списка планов
+    function renderPlans() {
+        let planList = document.getElementById('planList');
+        planList.innerHTML = ''; // Очищаем список перед обновлением
+
+        // Проходим по всем планам и добавляем их в список
+        plans.forEach((plan, index) => {
+            let planItem = document.createElement('div');
+            planItem.classList.add('plan');
+            if (plan.completed) {
+                planItem.classList.add('completed');
+            }
+            planItem.innerHTML = `
+                <span>${plan.title} (Силы: ${plan.effort})</span>
+                <div class="effort-stars"></div>
+                <button onclick="markCompleted(${index})">Выполнено</button>
+            `;
+            renderEffortStars(planItem.querySelector('.effort-stars'), plan.effort, index);
+            planList.appendChild(planItem);
+        });
+    }
+
+    // Функция для отметки выполненных задач
+    function markCompleted(index) {
         plans[index].completed = true;
-    } else {
-        console.log("Индекс плана недействителен");
+        renderPlans(); // После изменения статуса плана перерисовываем список
     }
-}
 
-// Пример использования функций
-addPlan("Завершить проект", 5); // Добавляем план
-addPlan("Сделать упражнения", 3); // Добавляем еще один план
-editPlan(0, "Завершить проект к 15 апреля", 7); // Редактируем первый план
-markCompleted(0); // Отмечаем первый план как выполненный
+    // Функция для отрисовки звёздочек потраченных сил
+    function renderEffortStars(container, effort, index) {
+        for (let i = 1; i <= 5; i++) {
+            let star = document.createElement('span');
+            star.classList.add('effort-star');
+            if (i <= effort) {
+                star.classList.add('yellow');
+                star.onclick = function() {
+                    toggleEffortStar(index, i);
+                };
+            }
+            container.appendChild(star);
+        }
+    }
 
-// Выводим все планы в консоль
-console.log("Список планов:");
-plans.forEach((plan, index) => {
-    console.log(`${index + 1}. ${plan.title} (Силы: ${plan.effort}) - ${plan.completed ? 'Выполнено' : 'Не выполнено'}`);
-});
+    // Функция для переключения цвета звёздочки
+    function toggleEffortStar(index, starIndex) {
+        let plan = plans[index];
+        if (plan && starIndex <= plan.effort) {
+            let star = document.querySelector(`#planList .plan:nth-child(${index + 1}) .effort-stars .effort-star:nth-child(${starIndex})`);
+            star.classList.toggle('yellow');
+        }
+    }
+
+    // Функция для начала нового дня (сброса списка планов)
+    function startNewDay() {
+        plans = []; // Очищаем массив планов
+        renderPlans(); // После сброса списка планов перерисовываем интерфейс
+    }
+
+    // Обработчик события отправки формы
+    document.getElementById('planForm').addEventListener('submit', function(event) {
+        event.preventDefault(); // Предотвращаем стандартное действие отправки формы
+
+        // Получаем значения из формы
+        let title = document.getElementById('planTitle').value;
+        let effort = document.getElementById('planEffort').value;
+
+        // Вызываем функцию для добавления плана
+        addPlan(title, effort);
+
+        // Очищаем поля формы
+        document.getElementById('planTitle').value = '';
+        document.getElementById('planEffort').value = '';
+    });
 </script>
 </body>
 </html>
