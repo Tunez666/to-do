@@ -5,91 +5,129 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Планер</title>
 <style>
-    /* Простые стили для интерфейса */
+    /* Общие стили */
     body {
-        font-family: Arial, sans-serif;
+        font-family: 'Arial', sans-serif;
+        background-color: #f0f0f0;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
     }
+    
+    .container {
+        max-width: 400px;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+        text-align: center;
+        color: #333;
+    }
+
+    form {
+        display: flex;
+        flex-direction: column;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    button {
+        margin-bottom: 10px;
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+        font-size: 16px;
+    }
+
+    button {
+        background-color: #4CAF50;
+        color: white;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background-color: #45a049;
+    }
+
     .plan {
         margin-bottom: 10px;
+        padding: 10px;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+        color: #333;
     }
+
     .completed {
         text-decoration: line-through;
+    }
+
+    /* Медиа-запросы для планшетов */
+    @media only screen and (min-width: 768px) {
+        .container {
+            max-width: 600px;
+        }
     }
 </style>
 </head>
 <body>
-<h1>Планер</h1>
-
-<!-- Форма для добавления планов -->
-<form id="planForm">
-    <input type="text" id="planTitle" placeholder="Название плана" required>
-    <input type="number" id="planEffort" placeholder="Силы" required>
-    <button type="submit">Добавить план</button>
-</form>
-
-<!-- Список планов -->
-<div id="planList"></div>
+<div class="container">
+    <h1>Планер</h1>
+    <form id="planForm">
+        <input type="text" id="planTitle" placeholder="Название плана" required>
+        <input type="number" id="planEffort" placeholder="Силы" required>
+        <button type="submit">Добавить план</button>
+    </form>
+    <div id="planList"></div>
+</div>
 
 <script>
-    // Функция для добавления плана
-    function addPlan(title, effort) {
-        let plan = { title: title, effort: effort, completed: false };
-        plans.push(plan);
-        savePlans(); // Сохраняем планы в локальное хранилище
-        renderPlans();
+    // JavaScript код здесь
+// Создаем массив для хранения планов
+let plans = [];
+
+// Функция добавления плана
+function addPlan(title, effort) {
+    let plan = { title: title, effort: effort, completed: false };
+    plans.push(plan);
+}
+
+// Функция редактирования плана
+function editPlan(index, title, effort) {
+    if (index >= 0 && index < plans.length) {
+        plans[index].title = title;
+        plans[index].effort = effort;
+    } else {
+        console.log("Индекс плана недействителен");
     }
+}
 
-    // Функция для отображения списка планов
-    function renderPlans() {
-        let planList = document.getElementById('planList');
-        planList.innerHTML = ''; // Очищаем список перед обновлением
-
-        // Проходим по всем планам и добавляем их в список
-        plans.forEach((plan, index) => {
-            let planItem = document.createElement('div');
-            planItem.classList.add('plan');
-            if (plan.completed) {
-                planItem.classList.add('completed');
-            }
-            planItem.innerHTML = `
-                <span>${plan.title} (Силы: ${plan.effort})</span>
-                <button onclick="markCompleted(${index})">Выполнено</button>
-            `;
-            planList.appendChild(planItem);
-        });
-    }
-
-    // Функция для отметки выполненных задач
-    function markCompleted(index) {
+// Функция отметки выполненных задач
+function markCompleted(index) {
+    if (index >= 0 && index < plans.length) {
         plans[index].completed = true;
-        savePlans(); // Сохраняем изменения в локальное хранилище
-        renderPlans();
+    } else {
+        console.log("Индекс плана недействителен");
     }
+}
 
-    // Функция для сохранения планов в локальное хранилище
-    function savePlans() {
-        localStorage.setItem('plans', JSON.stringify(plans));
-    }
+// Пример использования функций
+addPlan("Завершить проект", 5); // Добавляем план
+addPlan("Сделать упражнения", 3); // Добавляем еще один план
+editPlan(0, "Завершить проект к 15 апреля", 7); // Редактируем первый план
+markCompleted(0); // Отмечаем первый план как выполненный
 
-    // Инициализация планов при загрузке страницы
-    let plans = JSON.parse(localStorage.getItem('plans')) || [];
-    renderPlans();
-
-    // Обработка события отправки формы
-    document.getElementById('planForm').addEventListener('submit', function(event) {
-        event.preventDefault(); // Предотвращаем отправку формы по умолчанию
-
-        // Получаем значения из формы
-        let title = document.getElementById('planTitle').value;
-        let effort = document.getElementById('planEffort').value;
-
-        // Вызываем функцию для добавления плана
-        addPlan(title, effort);
-
-        // Очищаем поля формы
-        document.getElementById('planTitle').value = '';
-        document.getElementById('planEffort').value = '';
-    });
+// Выводим все планы в консоль
+console.log("Список планов:");
+plans.forEach((plan, index) => {
+    console.log(`${index + 1}. ${plan.title} (Силы: ${plan.effort}) - ${plan.completed ? 'Выполнено' : 'Не выполнено'}`);
+});
 </script>
 </body>
 </html>
