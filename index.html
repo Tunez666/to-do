@@ -11,6 +11,10 @@
 <body>
 <div class="container">
     <h1>Планер</h1>
+    <form id="dateForm">
+        <input type="date" id="planDate" required>
+        <button type="submit">Задать дату</button>
+    </form>
     <form id="planForm">
         <input type="text" id="planTitle" placeholder="Название плана" required>
         <input type="number" id="planEffort" placeholder="Силы" required>
@@ -53,12 +57,6 @@
         });
     }
 
-    // Функция для отметки выполненных задач
-    function markCompleted(index) {
-        plans[index].completed = true;
-        renderPlans(); // После изменения статуса плана перерисовываем список
-    }
-
     // Функция для отрисовки звёздочек потраченных сил
     function renderEffortStars(container, effort, index) {
         for (let i = 1; i <= 5; i++) {
@@ -81,6 +79,12 @@
             let star = document.querySelector(`#planList .plan:nth-child(${index + 1}) .effort-stars .effort-star:nth-child(${starIndex})`);
             star.classList.toggle('yellow');
         }
+    }
+
+    // Функция для отметки выполненных задач
+    function markCompleted(index) {
+        plans[index].completed = true;
+        renderPlans(); // После изменения статуса плана перерисовываем список
     }
 
     // Функция для начала нового дня (сброса списка планов)
