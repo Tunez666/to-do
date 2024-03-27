@@ -1,39 +1,95 @@
-// Создаем массив для хранения планов
-let plans = [];
-
-// Функция добавления плана
-function addPlan(title, effort) {
-    let plan = { title: title, effort: effort, completed: false };
-    plans.push(plan);
-}
-
-// Функция редактирования плана
-function editPlan(index, title, effort) {
-    if (index >= 0 && index < plans.length) {
-        plans[index].title = title;
-        plans[index].effort = effort;
-    } else {
-        console.log("Индекс плана недействителен");
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Планер</title>
+<style>
+    /* Простые стили для интерфейса */
+    body {
+        font-family: Arial, sans-serif;
     }
-}
+    .plan {
+        margin-bottom: 10px;
+    }
+    .completed {
+        text-decoration: line-through;
+    }
+</style>
+</head>
+<body>
+<h1>Планер</h1>
 
-// Функция отметки выполненных задач
-function markCompleted(index) {
-    if (index >= 0 && index < plans.length) {
+<!-- Форма для добавления планов -->
+<form id="planForm">
+    <input type="text" id="planTitle" placeholder="Название плана" required>
+    <input type="number" id="planEffort" placeholder="Силы" required>
+    <button type="submit">Добавить план</button>
+</form>
+
+<!-- Список планов -->
+<div id="planList"></div>
+
+<script>
+    // Функция для добавления плана
+    function addPlan(title, effort) {
+        let plan = { title: title, effort: effort, completed: false };
+        plans.push(plan);
+        savePlans(); // Сохраняем планы в локальное хранилище
+        renderPlans();
+    }
+
+    // Функция для отображения списка планов
+    function renderPlans() {
+        let planList = document.getElementById('planList');
+        planList.innerHTML = ''; // Очищаем список перед обновлением
+
+        // Проходим по всем планам и добавляем их в список
+        plans.forEach((plan, index) => {
+            let planItem = document.createElement('div');
+            planItem.classList.add('plan');
+            if (plan.completed) {
+                planItem.classList.add('completed');
+            }
+            planItem.innerHTML = `
+                <span>${plan.title} (Силы: ${plan.effort})</span>
+                <button onclick="markCompleted(${index})">Выполнено</button>
+            `;
+            planList.appendChild(planItem);
+        });
+    }
+
+    // Функция для отметки выполненных задач
+    function markCompleted(index) {
         plans[index].completed = true;
-    } else {
-        console.log("Индекс плана недействителен");
+        savePlans(); // Сохраняем изменения в локальное хранилище
+        renderPlans();
     }
-}
 
-// Пример использования функций
-addPlan("Завершить проект", 5); // Добавляем план
-addPlan("Сделать упражнения", 3); // Добавляем еще один план
-editPlan(0, "Завершить проект к 15 апреля", 7); // Редактируем первый план
-markCompleted(0); // Отмечаем первый план как выполненный
+    // Функция для сохранения планов в локальное хранилище
+    function savePlans() {
+        localStorage.setItem('plans', JSON.stringify(plans));
+    }
 
-// Выводим все планы в консоль
-console.log("Список планов:");
-plans.forEach((plan, index) => {
-    console.log(`${index + 1}. ${plan.title} (Силы: ${plan.effort}) - ${plan.completed ? 'Выполнено' : 'Не выполнено'}`);
-});
+    // Инициализация планов при загрузке страницы
+    let plans = JSON.parse(localStorage.getItem('plans')) || [];
+    renderPlans();
+
+    // Обработка события отправки формы
+    document.getElementById('planForm').addEventListener('submit', function(event) {
+        event.preventDefault(); // Предотвращаем отправку формы по умолчанию
+
+        // Получаем значения из формы
+        let title = document.getElementById('planTitle').value;
+        let effort = document.getElementById('planEffort').value;
+
+        // Вызываем функцию для добавления плана
+        addPlan(title, effort);
+
+        // Очищаем поля формы
+        document.getElementById('planTitle').value = '';
+        document.getElementById('planEffort').value = '';
+    });
+</script>
+</body>
+</html>
